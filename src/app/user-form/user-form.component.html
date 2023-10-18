@@ -1,0 +1,36 @@
+<div *ngIf="isFormVisible" class="overlay">
+    <form [hidden]="!isFormVisible" class="form-container border border-dark border-3" (ngSubmit)="onFormSubmit()">
+        <div class="my-1">
+            <h2 class="mt-2">{{ mode === 'add' ? 'Add New User' : 'Edit User'}}</h2>
+
+            <div *ngFor="let property of userProperties" class="text-start">
+                <div class="col-sm-3">
+                    <label 
+                        class="form-label me-3"
+                        [style.white-space]="property.required ? 'nowrap' : 'normal'" 
+                        for="{{ property.name }}"
+                        >{{ property.name }}
+                        <span 
+                            *ngIf="property.required" 
+                            class="text-danger"
+                            >*</span>
+                    </label>
+                    <input 
+                        class="form-control-sm" 
+                        [type]="property.type === 'number' ? 'number' : 'text'"
+                        [name]="property.name" 
+                        [(ngModel)]="formData[property.name]"
+                        >
+                </div>
+            </div>
+
+            <button 
+                type="submit" 
+                class="btn btn-primary m-3"
+                >{{ mode === 'add' ? 'Add' : 'Save'}}
+            </button>
+            
+            <button class="btn btn-danger" (click)="onToggleCloseForm()">Cancel</button>
+        </div>
+    </form>
+</div>
