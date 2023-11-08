@@ -17,6 +17,7 @@ export class UserService {
   public editResult$ = this.editSubject.asObservable();
   private addSubject: Subject<{result: boolean}> = new Subject();
   public addResult$ = this.addSubject.asObservable();
+  private unsubscriber$ = new Subject<void>();
 
   constructor() { 
     this.users = [];
@@ -66,5 +67,10 @@ export class UserService {
       localStorage.setItem(this.userDataKey, JSON.stringify(this.users));
       this.editSubject.next({result: true});
     }
+  }
+
+  public unsubscribe() {
+    this.unsubscriber$.next();
+    this.unsubscriber$.complete();
   }
 }

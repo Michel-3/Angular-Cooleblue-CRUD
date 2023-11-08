@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { faUserPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { UserService } from '../user.service';
 import { Router } from '@angular/router';
@@ -9,7 +9,7 @@ import { User } from '../user.model';
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
-export class UserListComponent {
+export class UserListComponent implements OnDestroy {
   public faUserPlus = faUserPlus;
   public faInfoCircle = faInfoCircle;
   public isFormVisible: boolean = false;
@@ -56,8 +56,11 @@ export class UserListComponent {
     }
   }
 
-  deleteUser(id: string): void {
+  public deleteUser(id: string): void {
     this.userService.deleteUser(id);
   }
 
+  public ngOnDestroy() {
+    this.userService.unsubscribe();
+  }
 }

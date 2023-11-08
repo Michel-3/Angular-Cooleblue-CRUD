@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import { UserService } from '../user.service';
 import { User } from '../user.model';
-import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-user-form',
@@ -12,20 +11,8 @@ export class UserFormComponent implements OnInit {
   @Input() user?: User;
   @Output() onCancel = new EventEmitter<void>();
   public modus!: 'add' | 'edit';
-  private unsubscriber$ = new Subject<void>();
 
-  constructor(private userService: UserService) {
-    this.userService.editResult$.subscribe((response) => {
-      if (response.result) {
-        console.log('User Edited');
-      }
-    });
-  }
-
-  public ngOnDestroy() {
-    this.unsubscriber$.next();
-    this.unsubscriber$.complete();
-  }
+  constructor(private userService: UserService) {}
 
   public ngOnInit(): void {
     this.modus = Boolean(this.user) ? 'edit' : 'add';
@@ -43,23 +30,7 @@ export class UserFormComponent implements OnInit {
         city: '',
       });
     } 
-
-    this.userService.editResult$
-      .pipe(takeUntil(this.unsubscriber$))
-      .subscribe((response) => {
-        if (response.result) {
-          console.log('User Edited, Unsubscribed');
-        }
-      });
-
       this.userService.getUsers();
-
-      this.userService.deleteResult$
-        .pipe(takeUntil(this.unsubscriber$))
-        .subscribe((x: any) => {
-          console.log(x);
-          this.userService.getUsers();
-        });
   }
 
 
