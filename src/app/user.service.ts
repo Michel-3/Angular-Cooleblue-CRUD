@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { User } from './user.model';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +11,6 @@ export class UserService {
   public users: User[] = [];
   private deleteSubject: Subject<{result: boolean}> = new Subject();
   public deleteResult$ = this.deleteSubject.asObservable();
-  private test: BehaviorSubject<any> = new BehaviorSubject('Michel');
-  public test$ = this.test.asObservable();
   private editSubject: Subject<{result: boolean}> = new Subject();
   public editResult$ = this.editSubject.asObservable();
   private addSubject: Subject<{result: boolean}> = new Subject();
