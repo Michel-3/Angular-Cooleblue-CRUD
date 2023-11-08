@@ -30,7 +30,6 @@ export class UserFormComponent implements OnInit {
         city: '',
       });
     } 
-      this.userService.getUsers();
   }
 
 

@@ -15,7 +15,6 @@ export class UserService {
   public editResult$ = this.editSubject.asObservable();
   private addSubject: Subject<{result: boolean}> = new Subject();
   public addResult$ = this.addSubject.asObservable();
-  private unsubscriber$ = new Subject<void>();
 
   constructor() { 
     this.users = [];
@@ -42,9 +41,9 @@ export class UserService {
   public deleteUser(id: string): void {
     this.users = this.users.filter((user: User) => user.id != id);
     localStorage.setItem(this.userDataKey, JSON.stringify(this.users));
-    setTimeout(() => {
-      this.deleteSubject.next({result: true});
-    });
+    // setTimeout(() => {
+    // });
+    this.deleteSubject.next({result: true});
   }
 
   public addUser(user: User) {
@@ -65,10 +64,5 @@ export class UserService {
       localStorage.setItem(this.userDataKey, JSON.stringify(this.users));
       this.editSubject.next({result: true});
     }
-  }
-
-  public unsubscribe() {
-    this.unsubscriber$.next();
-    this.unsubscriber$.complete();
   }
 }

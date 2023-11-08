@@ -3,6 +3,7 @@ import { faUserPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { UserService } from '../user.service';
 import { Router } from '@angular/router';
 import { User } from '../user.model';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-user-list',
@@ -15,23 +16,30 @@ export class UserListComponent implements OnDestroy {
   public isFormVisible: boolean = false;
   public users: User[];
   public selectedUser?: User;
+  private unsubscriber$ = new Subject<void>();
 
   constructor(private userService: UserService, private router: Router) {
     this.users = this.userService.users;
-    this.userService.deleteResult$.subscribe((response) => {
+    this.userService.deleteResult$
+    .pipe(takeUntil(this.unsubscriber$))
+    .subscribe((response: {result: boolean }) => {
       if (response.result) {
         this.users = this.userService.users;
       }
-    })
-    ;
-    this.userService.addResult$.subscribe((response) => {
+    });
+
+    this.userService.addResult$
+    .pipe(takeUntil(this.unsubscriber$))
+    .subscribe((response: {result: boolean }) => {
       if (response.result) {
         this.users = this.userService.users;
         this.isFormVisible = false;
       }
-    })
-    ;
-    this.userService.editResult$.subscribe((response) => {
+    });
+
+    this.userService.editResult$
+    .pipe(takeUntil(this.unsubscriber$))
+    .subscribe((response: {result: boolean }) => {
       if (response.result) {
         this.users = this.userService.users;
         this.isFormVisible = false;
@@ -61,6 +69,6 @@ export class UserListComponent implements OnDestroy {
   }
 
   public ngOnDestroy() {
-    this.userService.unsubscribe();
-  }
+    this.unsubscriber$.next();
+    this.unsubscriber$.complete();  }
 }
