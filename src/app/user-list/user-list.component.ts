@@ -1,83 +1,63 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { faUserPlus, faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { UserService } from '../user.service';
 import { Router } from '@angular/router';
-import { UserFormComponent } from '../user-form/user-form.component';
+import { User } from '../user.model';
 
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
-export class UserListComponent implements OnInit {
-  faUserPlus = faUserPlus;
-  faInfoCircle = faInfoCircle;
-  isFormVisible: boolean = false;
-  users: any[];
-  selectedUser: any;
-
-  @ViewChild(UserFormComponent) userFormComponent!: UserFormComponent;
+export class UserListComponent {
+  public faUserPlus = faUserPlus;
+  public faInfoCircle = faInfoCircle;
+  public isFormVisible: boolean = false;
+  public users: User[];
+  public selectedUser?: User;
 
   constructor(private userService: UserService, private router: Router) {
-    this.users = this.userService.getUserProperties();
+    this.users = this.userService.users;
+    this.userService.deleteResult$.subscribe((response) => {
+      if (response.result) {
+        this.users = this.userService.users;
+      }
+    })
+    ;
+    this.userService.addResult$.subscribe((response) => {
+      if (response.result) {
+        this.users = this.userService.users;
+        this.isFormVisible = false;
+      }
+    })
+    ;
+    this.userService.editResult$.subscribe((response) => {
+      if (response.result) {
+        this.users = this.userService.users;
+        this.isFormVisible = false;
+      }
+    });
   }
 
-  viewUserDetail(userId: number) {
+  public viewUserDetail(userId: string): void {
     this.router.navigate(['/user-detail', userId]);
   }
 
-  ngOnInit() {
-    this.loadUserDataFromLocalStorage();
-  }
-
-  loadUserDataFromLocalStorage() {
-    const storedUsers = localStorage.getItem(this.userService.userDataKey);
-    if (storedUsers) {
-      this.users = JSON.parse(storedUsers);
-    } else {
-      this.users = [];
-    }
-  }
-
-  onOpenAddForm() {
+  public openUserForm(userId?: string): void {
     this.isFormVisible = !this.isFormVisible;
-    this.userFormComponent.mode = 'add';
-  }
 
-  onUserAdded(user: any) {
-  if (this.userFormComponent.mode === 'add') {
-    this.users.push(user);
-  } else if (this.userFormComponent.mode === 'edit') {
-      this.editUserData(user);
+    if (userId) {
+      const filteredResult = this.users.filter((user: User) => user.id == userId);
+      if (filteredResult.length == 1) {
+        this.selectedUser = filteredResult[0];
+      }
+    } else {
+      this.selectedUser = undefined;
     }
-    this.isFormVisible = false;
-    this.userFormComponent.mode = 'add';
   }
 
-  onOpenEditForm(user: any) {
-    this.selectedUser = user;
-    this.isFormVisible = true;
-    this.userFormComponent.mode = 'edit';
-    this.userFormComponent.populateEditForm(user);
-  }
-  
-  onDeleteUser(index: any) {
-    const storedUsers = localStorage.getItem('users');
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
-
-    users.splice(index, 1);
-
-    localStorage.setItem('users', JSON.stringify(users));
-
-    window.location.reload();
-  }
-
-  editUserData(user: any) {
-    const index = this.users.findIndex((u) => u.id === user.id);
-
-    if (index !== -1) {
-      this.users[index] = user;
-    }
+  deleteUser(id: string): void {
+    this.userService.deleteUser(id);
   }
 
 }

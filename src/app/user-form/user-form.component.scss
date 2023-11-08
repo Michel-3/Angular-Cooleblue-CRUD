@@ -38,3 +38,24 @@
 //         span{font-weight: 600}
 //     };
 // }
+
+.full-name {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 300px;
+}
+
+.small-input-field {
+    width: 50px;
+}
+
+.medium-input-field {
+    width: 100px;
+}
+
+.street-address {
+    display: flex;
+    
+}
+

@@ -1,88 +1,83 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import { UserService } from '../user.service';
+import { User } from '../user.model';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-user-form',
   templateUrl: './user-form.component.html',
   styleUrls: ['./user-form.component.scss']
 })
-export class UserFormComponent {
-  @Input() isFormVisible: boolean = false;
-  @Input() mode: 'add' | 'edit' = 'add';
-  @Output() userAdded = new EventEmitter<any>();
-  userProperties: { name: string; type: string; required?: boolean }[];
-  formData: any = {};
+export class UserFormComponent implements OnInit {
+  @Input() user?: User;
+  @Output() onCancel = new EventEmitter<void>();
+  public modus!: 'add' | 'edit';
+  private unsubscriber$ = new Subject<void>();
 
   constructor(private userService: UserService) {
-    this.userProperties = this.userService.getUserProperties();
-
-    this.userProperties.forEach(property => {
-      if (
-        property.name === 'Name' || 
-        property.name === 'Lastname' || 
-        property.name === 'City' || 
-        property.name === 'Housenumber' || 
-        property.name === 'Postalcode' ||
-        property.name === 'Street'
-        ) {
-        property.required = true;
-      } else {
-        property.required = false;
+    this.userService.editResult$.subscribe((response) => {
+      if (response.result) {
+        console.log('User Edited');
       }
     });
   }
 
-  onToggleCloseForm() {
-    this.isFormVisible = false;
-    window.location.reload();
+  public ngOnDestroy() {
+    this.unsubscriber$.next();
+    this.unsubscriber$.complete();
   }
 
-  populateEditForm(userData: any) {
-    this.formData = { ...userData };
-    this.mode = 'edit';
+  public ngOnInit(): void {
+    this.modus = Boolean(this.user) ? 'edit' : 'add';
+
+    if (this.modus === 'add') {
+      this.user = new User({
+        id: this.userService.generateUniqueUserId(), 
+        name: '',
+        infix: '',
+        lastname: '',
+        street: '',
+        housenumber: '',
+        additive: '',
+        postalcode: '',
+        city: '',
+      });
+    } 
+
+    this.userService.editResult$
+      .pipe(takeUntil(this.unsubscriber$))
+      .subscribe((response) => {
+        if (response.result) {
+          console.log('User Edited, Unsubscribed');
+        }
+      });
+
+      this.userService.getUsers();
+
+      this.userService.deleteResult$
+        .pipe(takeUntil(this.unsubscriber$))
+        .subscribe((x: any) => {
+          console.log(x);
+          this.userService.getUsers();
+        });
   }
 
-  onAddFormSubmit() {
-    const requiredFields = this.userProperties.filter(property => property.required);
-    for (const field of requiredFields) {
-      if (!this.formData[field.name]) {
-        alert(`Please fill in the fields with this * icon.`);
-        return;
+
+
+  public submitForm(): void {
+    if (this.user) {
+      if (
+        this.user.name &&
+        this.user.lastname &&
+        this.user.street &&
+        this.user.housenumber &&
+        this.user.postalcode &&
+        this.user.city
+      ) {
+        this.modus === 'add' ? this.userService.addUser(this.user) : this.userService.updateUser(this.user);
+      } else {
+        alert('Please, fill in all the fields with a *');
       }
-    }
-
-    const newUser = { ...this.formData };
-    newUser.id = this.userService.generateUniqueUserId();
-
-    const storedUsers = localStorage.getItem(this.userService.userDataKey);
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
-    users.push(newUser);
-    localStorage.setItem(this.userService.userDataKey, JSON.stringify(users));
-
-    this.userAdded.emit(newUser);
-    window.location.reload();
-  }
-
-  onEditFormSubmit() {
-    const storedUsers = localStorage.getItem(this.userService.userDataKey);
-    const users = storedUsers ? JSON.parse(storedUsers) : [];
-
-    const index = users.findIndex((u: any) => u.id === this.formData.id);
-    if (index !== -1) {
-      users[index] = this.formData;
-      localStorage.setItem(this.userService.userDataKey, JSON.stringify(users));
-    }
-
-    this.userAdded.emit(this.formData);
-    this.mode = 'add';
-    this.onToggleCloseForm();
-  }
-
-  onFormSubmit() {
-    if (this.mode === 'add') {
-      this.onAddFormSubmit();
-    } else if (this.mode === 'edit') {
-      this.onEditFormSubmit();
     }
   }
 }

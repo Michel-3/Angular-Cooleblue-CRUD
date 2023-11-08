@@ -1,25 +1,30 @@
 <div class="container border mt-2 bg-light  bg-light shadow p-3 bg-body-tertiary rounded">
     <h1 class="mt-2">Personal Data</h1>
+    
     <div class="userDataContainer" *ngFor="let user of users; let i = index">
         <div class="bg-white m-3">
             <div class="row ">
                 <div class="col m-3">
-                    <h3>{{ user.Name }} {{ user.Infix }} {{ user.Lastname }}</h3>
+                    <h3>{{ user.fullName }}</h3>
                 </div>
                 <div class="col d-flex justify-content-end">
                     <button class="btn btn-dark my-3 mx-2" [routerLink]="['/user-detail', user.id]">
                         <fa-icon [icon]="faInfoCircle"></fa-icon>
                     </button>                    
-                    <button class="btn btn-primary my-3 mx-2" (click)="onOpenEditForm(user)">Edit</button>
-                    <button class="btn btn-danger my-3 mx-2" (click)="onDeleteUser(i)">Delete</button>
+                    <button class="btn btn-primary my-3 mx-2" (click)="openUserForm(user.id)">Edit</button>
+                    <button class="btn btn-danger my-3 mx-2" (click)="deleteUser(user.id)">Delete</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <button class="btn btn-primary m-3" (click)="onOpenAddForm()">
+    <button class="btn btn-primary m-3" (click)="openUserForm()">
         <fa-icon [icon]="faUserPlus"></fa-icon>
     </button>
 </div>
 
-<app-user-form [isFormVisible]="isFormVisible" (userAdded)="onUserAdded($event)"></app-user-form>
+<app-user-form 
+    *ngIf="isFormVisible" 
+    [user]="selectedUser"
+    (onCancel)="isFormVisible = false"   
+></app-user-form>

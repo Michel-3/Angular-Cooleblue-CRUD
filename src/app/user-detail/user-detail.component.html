@@ -1,12 +1,12 @@
 <div class="userDataContainer border m-3 bg-light shadow p-3 bg-body-tertiary rounded" *ngIf="user">
     <div class="m-3">
-        <h3>{{ user.Name }} {{ user.Infix }} {{ user.Lastname }}</h3>
+        <h3>{{ user.fullName }}</h3>
         <div>
             <div>
-                {{ user.Street }} {{ user.Housenumber }} {{ user.Additive }}
+                {{ user.fullStreetInfo }}
             </div>
             <div>
-                {{ user.Postalcode }} {{ user.City }}
+                {{ user.postalcodeAndCity }}
             </div>
         </div>
     </div>
